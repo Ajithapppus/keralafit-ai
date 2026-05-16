@@ -178,55 +178,128 @@ navLinks.forEach(link => {
     });
 });
 
-// --- Kerala Diet Plan Generation ---
+// --- Kerala Diet Database & Generation ---
+const dietDB = {
+    breakfast: [
+        { items: "2 Appam or Puttu with Kadala Curry, 1 cup Green Tea", cals: 350, protein: 12, badFor: [] },
+        { items: "3 Idiyappam with Egg Roast", cals: 320, protein: 18, badFor: ["veg"] },
+        { items: "2 Dosa with Sambar and Coconut Chutney", cals: 300, protein: 8, badFor: [] },
+        { items: "Oats Upma with mixed vegetables (Carrot, Beans)", cals: 250, protein: 7, badFor: [] },
+        { items: "2 slices Whole Wheat Bread with Peanut Butter & Banana", cals: 300, protein: 10, badFor: ["diabetes"] }
+    ],
+    midMorning: [
+        { items: "1 glass Tender Coconut Water", cals: 50, protein: 1, badFor: [] },
+        { items: "1 glass Spiced Buttermilk (Sambharam)", cals: 40, protein: 3, badFor: [] },
+        { items: "1 small Apple or Papaya bowl", cals: 60, protein: 1, badFor: [] },
+        { items: "A handful of Almonds & Walnuts", cals: 150, protein: 5, badFor: [] }
+    ],
+    lunch: [
+        { items: "1 cup Kerala Red Rice, Fish Curry, Avial, Thoran", cals: 450, protein: 25, badFor: ["veg"] },
+        { items: "1 cup Kerala Red Rice, Sambar, Cabbage Thoran, Pulissery", cals: 400, protein: 12, badFor: [] },
+        { items: "2 Chapathi with Chicken Curry (less coconut) and Salad", cals: 420, protein: 28, badFor: ["veg"] },
+        { items: "1 cup Brown Rice, Green Gram (Cherupayar) Curry, Mezhukkupuratti", cals: 380, protein: 15, badFor: [] }
+    ],
+    eveningSnack: [
+        { items: "1 Black Tea (Kattan Chaya), 1 boiled Nendran Banana", cals: 150, protein: 2, badFor: ["diabetes"] },
+        { items: "1 Green Tea, Sundal (Boiled Chickpeas)", cals: 120, protein: 6, badFor: [] },
+        { items: "1 Filter Coffee (no sugar), 2 Rusk", cals: 90, protein: 2, badFor: [] },
+        { items: "Makhana (Fox nuts) roasted in ghee", cals: 100, protein: 3, badFor: [] }
+    ],
+    dinner: [
+        { items: "2 Wheat Dosa with Tomato Chutney", cals: 200, protein: 6, badFor: [] },
+        { items: "1 large bowl of Vegetable Soup and 1 Appam", cals: 180, protein: 4, badFor: [] },
+        { items: "2 Chapathi with Dal (Parippu) Curry", cals: 250, protein: 10, badFor: [] },
+        { items: "Grilled Fish / Chicken breast with steamed veggies", cals: 300, protein: 35, badFor: ["veg"] }
+    ]
+};
+
+let currentDietPlan = {};
+
+function getRandomMeal(mealType, conditions) {
+    const options = dietDB[mealType];
+    const conditionStr = conditions.toLowerCase();
+    
+    // Filter out bad foods based on conditions
+    let validOptions = options.filter(meal => {
+        if(conditionStr.includes('diabet') && meal.badFor.includes('diabetes')) return false;
+        if((conditionStr.includes('veg') || conditionStr.includes('vegetarian')) && meal.badFor.includes('veg')) return false;
+        return true;
+    });
+    
+    // Fallback if filtering removes everything
+    if(validOptions.length === 0) validOptions = options; 
+    
+    return validOptions[Math.floor(Math.random() * validOptions.length)];
+}
+
 function generateKeralaDiet() {
     const dietTimeline = document.getElementById('dietTimeline');
-    const meals = [
-        {
-            time: "08:00 AM", name: "Breakfast",
-            items: "2 Appam or Puttu with Kadala Curry, 1 cup Green Tea",
-            cals: "350 kcal", protein: "12g"
-        },
-        {
-            time: "11:00 AM", name: "Mid-Morning",
-            items: "1 glass Tender Coconut Water or Buttermilk",
-            cals: "50 kcal", protein: "2g"
-        },
-        {
-            time: "01:30 PM", name: "Lunch",
-            items: "1 cup Kerala Red Rice, Fish Curry (Meen Curry), Avial, Thoran, Green Gram (Cherupayar)",
-            cals: "450 kcal", protein: "25g"
-        },
-        {
-            time: "04:30 PM", name: "Evening Snack",
-            items: "1 Black Tea (Kattan Chaya), 1 small portion boiled Nendran Banana or Sundal",
-            cals: "150 kcal", protein: "4g"
-        },
-        {
-            time: "08:00 PM", name: "Dinner",
-            items: "2 Dosa or Idli with Sambar and Coconut Chutney (less oil)",
-            cals: "300 kcal", protein: "10g"
-        }
+    const conditions = userData.healthConditions || '';
+    
+    // Generate initial random diet
+    const mealStructure = [
+        { key: 'breakfast', time: "08:00 AM", name: "Breakfast" },
+        { key: 'midMorning', time: "11:00 AM", name: "Mid-Morning" },
+        { key: 'lunch', time: "01:30 PM", name: "Lunch" },
+        { key: 'eveningSnack', time: "04:30 PM", name: "Evening Snack" },
+        { key: 'dinner', time: "08:00 PM", name: "Dinner" }
     ];
 
+    if(Object.keys(currentDietPlan).length === 0) {
+        mealStructure.forEach(meal => {
+            currentDietPlan[meal.key] = getRandomMeal(meal.key, conditions);
+        });
+    }
+
+    renderDietPlan(mealStructure);
+}
+
+function renderDietPlan(mealStructure) {
+    const dietTimeline = document.getElementById('dietTimeline');
     let html = '';
-    meals.forEach(meal => {
+    
+    mealStructure.forEach(meal => {
+        const selectedFood = currentDietPlan[meal.key];
         html += `
             <div class="glass-panel meal-card fade-in">
                 <div class="meal-time">${meal.time}</div>
                 <div class="meal-details">
                     <h4>${meal.name}</h4>
-                    <p>${meal.items}</p>
+                    <p>${selectedFood.items}</p>
                     <div class="meal-macros">
-                        <span><i class="fas fa-fire"></i> ${meal.cals}</span>
-                        <span><i class="fas fa-drumstick-bite"></i> ${meal.protein}</span>
+                        <span><i class="fas fa-fire"></i> ${selectedFood.cals} kcal</span>
+                        <span><i class="fas fa-drumstick-bite"></i> ${selectedFood.protein}g</span>
                     </div>
                 </div>
+                <button class="btn btn-outline btn-sm swap-meal-btn" data-mealkey="${meal.key}" title="Swap Food">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </div>
         `;
     });
     dietTimeline.innerHTML = html;
+
+    // Attach Swap Event Listeners
+    document.querySelectorAll('.swap-meal-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const key = btn.dataset.mealkey;
+            const conditions = userData.healthConditions || '';
+            const currentFoodItems = currentDietPlan[key].items;
+            
+            // Get a new random meal that is DIFFERENT from the current one
+            let newMeal = getRandomMeal(key, conditions);
+            let attempts = 0;
+            while(newMeal.items === currentFoodItems && attempts < 5) {
+                newMeal = getRandomMeal(key, conditions);
+                attempts++;
+            }
+            
+            currentDietPlan[key] = newMeal;
+            renderDietPlan(mealStructure); // Re-render
+        });
+    });
 }
+
 
 // --- Workout Generation ---
 function generateWorkout() {

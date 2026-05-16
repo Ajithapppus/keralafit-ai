@@ -90,6 +90,21 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     color: var(--primary);
 }
 .btn-icon { padding: 0.8rem; border-radius: 50%; }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 20px; }
+.swap-meal-btn {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
+.swap-meal-btn:hover {
+    background: var(--primary);
+    color: white;
+}
 
 /* Glassmorphism */
 .glass-panel, .glass-container {
