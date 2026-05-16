@@ -271,8 +271,8 @@ function renderDietPlan(mealStructure) {
                         <span><i class="fas fa-drumstick-bite"></i> ${selectedFood.protein}g</span>
                     </div>
                 </div>
-                <button class="btn btn-outline btn-sm swap-meal-btn" data-mealkey="${meal.key}" title="Swap Food">
-                    <i class="fas fa-sync-alt"></i>
+                <button class="btn btn-outline btn-sm swap-meal-btn" data-mealkey="${meal.key}" title="Skip & Change Food">
+                    <i class="fas fa-sync-alt"></i> Skip & Change
                 </button>
             </div>
         `;
